@@ -53,6 +53,36 @@ services:
       test-data:
         condition: service_completed_successfully
 
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-test:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-test
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: sleep infinity
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+
   test-data:
     build:
       context: ./data-svc

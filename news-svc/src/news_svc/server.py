@@ -53,11 +53,13 @@ def _random_news_batch(batch_size: int = 1) -> List[NewsItem]:
 class Subscription:
     @strawberry.subscription
     async def news_feed(self, interval_seconds: float = 1.0, batch_size: int = 1) -> AsyncGenerator[List[NewsItem], None]:
+        # Slightly slow down overall cadence while preserving jitter characteristics
+        SLOW_FACTOR = 1.3
         while True:
             yield _random_news_batch(batch_size)
             # Add jitter so updates feel more realistic while staying fast
-            low = max(0.05, interval_seconds * 0.5)
-            high = max(low + 0.01, interval_seconds * 1.5)
+            low = max(0.05, interval_seconds * 0.5 * SLOW_FACTOR)
+            high = max(low + 0.01, interval_seconds * 1.5 * SLOW_FACTOR)
             await asyncio.sleep(random.uniform(low, high))
 
 

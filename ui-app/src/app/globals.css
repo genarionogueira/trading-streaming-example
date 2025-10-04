@@ -53,3 +53,5 @@ body {
 .rdg .rdg-header-row .rdg-cell {
   font-weight: 600;
 }
+
+/* (removed) continuous ticker; using on-insert animations instead */
