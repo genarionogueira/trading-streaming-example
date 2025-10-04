@@ -1,0 +1,17 @@
+{
+  "name": "gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "hive-gateway proxy",
+    "dev": "hive-gateway proxy",
+    "mesh": "mesh start"
+  },
+  "dependencies": {
+    "@graphql-hive/gateway": "^2.0.0",
+    "@graphql-mesh/cli": "latest",
+    "@graphql-mesh/graphql": "latest",
+    "typescript": "^5.5.4"
+  }
+}

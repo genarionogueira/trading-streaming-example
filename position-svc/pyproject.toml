@@ -1,0 +1,27 @@
+[project]
+name = "position-svc"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Genario Nogueira",email = "genarionogueira2@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "strawberry-graphql (>=0.282.0,<0.283.0)",
+    "fastapi (>=0.118.0,<0.119.0)",
+    "uvicorn (>=0.37.0,<0.38.0)"
+]
+
+[tool.poetry]
+packages = [{include = "position_svc", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+httpx = "^0.28.1"
+pytest-asyncio = "^1.2.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

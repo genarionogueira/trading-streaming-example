@@ -1,0 +1,106 @@
+services:
+  ui:
+    build:
+      context: ./ui-app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_GRAPHQL_HTTP=http://localhost:8080/graphql
+      - NEXT_PUBLIC_GRAPHQL_WS=ws://localhost:8080/graphql
+    volumes:
+      - ./data:/app/data
+
+
+  position:
+    build:
+      context: ./position-svc
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      test-position:
+        condition: service_completed_successfully
+
+  test-position:
+    build:
+      context: ./position-svc
+      dockerfile: Dockerfile
+    command: sh -c "pip install --no-cache-dir pytest httpx pytest-asyncio && pytest -q"
+    volumes:
+      - ./position-svc:/app
+    environment:
+      - PYTHONPATH=/app/src
+    depends_on: []
+
+
+  data:
+    build:
+      context: ./data-svc
+      dockerfile: Dockerfile
+    ports:
+      - 5001:4000
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      test-data:
+        condition: service_completed_successfully
+
+  test-data:
+    build:
+      context: ./data-svc
+      dockerfile: Dockerfile
+    command: sh -c "pip install --no-cache-dir pytest httpx pytest-asyncio && pytest -q"
+    volumes:
+      - ./data-svc:/app
+    environment:
+      - PYTHONPATH=/app/src
+    depends_on: []
+
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8080:4000
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      data:
+        condition: service_started
+      position:
+        condition: service_started
+      news:
+        condition: service_started
+
+  news:
+    build:
+      context: ./news-svc
+      dockerfile: Dockerfile
+    ports:
+      - 5002:4000
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      test-news:
+        condition: service_completed_successfully
+
+  test-news:
+    build:
+      context: ./news-svc
+      dockerfile: Dockerfile
+    command: sh -c "pip install --no-cache-dir pytest httpx pytest-asyncio && pytest -q"
+    volumes:
+      - ./news-svc:/app
+    environment:
+      - PYTHONPATH=/app/src
+    depends_on: []
+

@@ -1,0 +1,17 @@
+sources:
+  - name: data
+    handler:
+      graphql:
+        endpoint: http://data:4000/graphql
+  - name: position
+    handler:
+      graphql:
+        endpoint: http://position:4000/graphql
+  - name: news
+    handler:
+      graphql:
+        endpoint: http://news:4000/graphql
+
+serve:
+  port: 4000
+  playground: true
