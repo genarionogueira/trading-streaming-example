@@ -47,6 +47,9 @@ services:
       - 5001:4000
     environment:
       - NODE_ENV=production
+      - ENABLE_KAFKA=true
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_PRICE_TOPIC=prices
     volumes:
       - ./data:/app/data
     depends_on:
@@ -119,6 +122,9 @@ services:
       - 5002:4000
     environment:
       - NODE_ENV=production
+      - ENABLE_KAFKA=true
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_NEWS_TOPIC=news
     depends_on:
       test-news:
         condition: service_completed_successfully

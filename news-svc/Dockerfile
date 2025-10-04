@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install runtime dependencies (keep it minimal)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir fastapi "uvicorn[standard]" strawberry-graphql
+    pip install --no-cache-dir fastapi "uvicorn[standard]" strawberry-graphql aiokafka
 
 # Copy application source
 COPY src ./src

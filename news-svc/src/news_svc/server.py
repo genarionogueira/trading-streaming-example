@@ -6,6 +6,8 @@ from typing import AsyncGenerator, List
 import strawberry
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
+from .kafka_utils import KAFKA_ENABLED, KAFKA_NEWS_TOPIC, encode_news_item, publish_batch
+
 
 
 @strawberry.type
@@ -56,7 +58,14 @@ class Subscription:
         # Slightly slow down overall cadence while preserving jitter characteristics
         SLOW_FACTOR = 1.3
         while True:
-            yield _random_news_batch(batch_size)
+            batch = _random_news_batch(batch_size)
+
+            if KAFKA_ENABLED:
+                asyncio.create_task(
+                    publish_batch(KAFKA_NEWS_TOPIC, (encode_news_item(n) for n in batch))
+                )
+
+            yield batch
             # Add jitter so updates feel more realistic while staying fast
             low = max(0.05, interval_seconds * 0.5 * SLOW_FACTOR)
             high = max(low + 0.01, interval_seconds * 1.5 * SLOW_FACTOR)
