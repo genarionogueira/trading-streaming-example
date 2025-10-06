@@ -12,8 +12,9 @@ Responsibilities
 - Fail safely (no-ops) when Kafka is disabled or unavailable
 
 Environment variables
-- ENABLE_KAFKA: enable/disable publishing (default: false)
-- KAFKA_BOOTSTRAP_SERVERS: bootstrap servers, e.g. "kafka:9092"
+- ENABLE_KAFKA: enable/disable Kafka usage (default: false)
+- KAFKA_BOOTSTRAP_SERVERS: Kafka bootstrap servers (default: "kafka:9092").
+  Optional override; comma-separated host:port entries are supported.
 - KAFKA_PRICE_TOPIC: topic name for price events (default: "prices")
 
 Usage
@@ -36,7 +37,7 @@ from typing import Optional, Iterable
 
 
 KAFKA_ENABLED: bool = os.getenv("ENABLE_KAFKA", "false").lower() in {"1", "true", "yes"}
-KAFKA_BOOTSTRAP: Optional[str] = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+KAFKA_BOOTSTRAP: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
 KAFKA_PRICE_TOPIC: str = os.getenv("KAFKA_PRICE_TOPIC", "prices")
 
 

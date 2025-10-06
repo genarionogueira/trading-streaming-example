@@ -59,7 +59,7 @@ const columns: Column<StockRow>[] = [
   },
 ];
 
-const DEFAULT_SYMBOLS: string[] = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"];
+const DEFAULT_SYMBOLS: string[] = ["AAPL", "MSFT", "GOOGL", "AMZN"];
 
 const PRICES_SUBSCRIPTION = gql`
   subscription Prices($symbols: [String!], $intervalSeconds: Float) {
@@ -87,7 +87,15 @@ type PricesVars = {
 };
 
 export default function StockGrid() {
-  const [rows, setRows] = React.useState<StockRow[]>([]);
+  const [rows, setRows] = React.useState<StockRow[]>(() =>
+    DEFAULT_SYMBOLS.map((s) => ({ symbol: s, price: 0, change: 0 }))
+  );
+
+  const symbolIndex = React.useMemo(() => {
+    const map = new Map<string, number>();
+    DEFAULT_SYMBOLS.forEach((s, i) => map.set(s, i));
+    return map;
+  }, []);
 
   const { data, error } = useSubscription<PricesData, PricesVars>(
     PRICES_SUBSCRIPTION,
@@ -99,13 +107,28 @@ export default function StockGrid() {
       onData: ({ data }) => {
         const payload = data?.data;
         if (!payload?.prices) return;
-        setRows(
-          payload.prices.map((p) => ({
-            symbol: p.symbol,
-            price: p.price,
-            change: p.changePercent,
-          }))
-        );
+        setRows((prev) => {
+          let next = prev;
+          for (const p of payload.prices) {
+            const idx = symbolIndex.get(p.symbol);
+            if (idx === undefined) continue;
+            const updated: StockRow = {
+              symbol: p.symbol,
+              price: p.price,
+              change: p.changePercent,
+            };
+            if (
+              prev[idx] &&
+              prev[idx].price === updated.price &&
+              prev[idx].change === updated.change
+            ) {
+              continue;
+            }
+            if (next === prev) next = prev.slice();
+            next[idx] = updated;
+          }
+          return next;
+        });
       },
       onError: (err) => {
         // Helpful when testing locally
@@ -115,16 +138,30 @@ export default function StockGrid() {
   );
 
   React.useEffect(() => {
-    if (data?.prices) {
-      setRows(
-        data.prices.map((p) => ({
+    if (!data?.prices) return;
+    setRows((prev) => {
+      let next = prev;
+      for (const p of data.prices) {
+        const idx = symbolIndex.get(p.symbol);
+        if (idx === undefined) continue;
+        const updated: StockRow = {
           symbol: p.symbol,
           price: p.price,
           change: p.changePercent,
-        }))
-      );
-    }
-  }, [data]);
+        };
+        if (
+          prev[idx] &&
+          prev[idx].price === updated.price &&
+          prev[idx].change === updated.change
+        ) {
+          continue;
+        }
+        if (next === prev) next = prev.slice();
+        next[idx] = updated;
+      }
+      return next;
+    });
+  }, [data, symbolIndex]);
 
   return (
     <div className="h-[320px] w-full overflow-hidden rounded-sm">
